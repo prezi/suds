@@ -38,7 +38,7 @@ class Document(Binding):
     (multiple message parts), must present a I{document} view for that method.
     """
         
-    def bodycontent(self, method, args, kwargs):
+    def bodycontent(self, method, args, kwargs, attributes=None):
         #
         # The I{wrapped} vs I{bare} style is detected in 2 ways.
         # If there is 2+ parts in the message then it is I{bare}.
@@ -54,6 +54,11 @@ class Document(Binding):
         else:
             root = []
         n = 0
+
+        if attributes:
+            for name, val in attributes.items():
+                root.set(name, val)
+
         for pd in self.param_defs(method):
             if n < len(args):
                 value = args[n]

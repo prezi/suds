@@ -24,6 +24,7 @@ from suds.sax import Namespace
 from suds.sax.parser import Parser
 from suds.sax.document import Document
 from suds.sax.element import Element
+from suds.sax.attribute import Attribute
 from suds.sudsobject import Factory, Object
 from suds.mx import Content
 from suds.mx.literal import Literal as MxLiteral
@@ -101,7 +102,7 @@ class Binding:
         """
         raise Exception, 'not implemented'
 
-    def get_message(self, method, args, kwargs):
+    def get_message(self, method, args, kwargs, attributes=None):
         """
         Get the soap message for the specified method, args and soapheaders.
         This is the entry point for creating the outbound soap message.
@@ -117,7 +118,7 @@ class Binding:
 
         content = self.headercontent(method)
         header = self.header(content)
-        content = self.bodycontent(method, args, kwargs)
+        content = self.bodycontent(method, args, kwargs, attributes=attributes)
         body = self.body(content)
         env = self.envelope(header, body)
         if self.options().prefixes:
