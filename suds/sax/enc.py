@@ -51,7 +51,7 @@ class Encoder:
                 if c in s:
                     return True
         return False
-    
+
     def encode(self, s):
         """
         Encode special characters found in string I{s}.
@@ -61,10 +61,17 @@ class Encoder:
         @rtype: str
         """
         if isinstance(s, basestring) and self.needsEncoding(s):
+            # Skip encoding of CDATA
+            cdata_found = False
+            if len(s) > 12 and s[:9] == '<![CDATA[' and s[-3:] == ']]>':
+                s = s[9:-3]
+                cdata_found = True
             for x in self.encodings:
                 s = re.sub(x[0], x[1], s)
+            if cdata_found:
+                s = '{cdata_open}{s}{cdata_close}'.format(cdata_open='<![CDATA[', s=s, cdata_close=']]>')
         return s
-    
+
     def decode(self, s):
         """
         Decode special characters encodings found in string I{s}.
