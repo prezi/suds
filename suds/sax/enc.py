@@ -70,7 +70,6 @@ class Encoder:
                 s = re.sub(x[0], x[1], s)
             if cdata_found:
                 s = u'<![CDATA[{s}]]>'.format(s=s)
-                # s = '{cdata_open}{s}{cdata_close}'.format(cdata_open='<![CDATA[', s=s, cdata_close=']]>')
         return s
 
     def decode(self, s):
