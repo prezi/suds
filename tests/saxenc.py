@@ -53,13 +53,13 @@ def cdata():
     print a.getText()
 
 def cdata_custom():
-    """Confirm custom cdata modifiations escape all characters
-    except opening and closing cdata tags.
+    """Confirm custom cdata modifications escape all characters
+    except opening and closing cdata tags, and only escapes angle brackets inside the cdata tag.
     """
-    xml = '<![CDATA[<u><b>underline and bold&lt;/u&gt;&lt;/b&gt;]]>'
+    xml = "<![CDATA[<u><b>underline's \"Test\" & bold&lt;/u&gt;&lt;/b&gt;]]>"
     e = Encoder()
     d = e.encode(xml)
-    encoded_xml = '<![CDATA[&lt;u&gt;&lt;b&gt;underline and bold&lt;/u&gt;&lt;/b&gt;]]>'
+    encoded_xml = "<![CDATA[&lt;u&gt;&lt;b&gt;underline's \"Test\" & bold&lt;/u&gt;&lt;/b&gt;]]>"
     assert d == encoded_xml
 
 if __name__ == '__main__':

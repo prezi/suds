@@ -33,12 +33,26 @@ class Encoder:
     
     encodings = \
         (( '&(?!(amp|lt|gt|quot|apos);)', '&amp;' ),( '<', '&lt;' ),( '>', '&gt;' ),( '"', '&quot;' ),("'", '&apos;' ))
+    encodings_cdata = \
+        (( '<', '&lt;' ),( '>', '&gt;' ))
     decodings = \
         (( '&lt;', '<' ),( '&gt;', '>' ),( '&quot;', '"' ),( '&apos;', "'" ),( '&amp;', '&' ))
     special = \
         ('&', '<', '>', '"', "'")
-    
-    def needsEncoding(self, s):
+    special_cdata = \
+        ('<', '>')
+
+    def containsCdata(self, s):
+        """
+        Get whether string I{s} is wrapped in a <![CDATA[ s ]]> tag.
+        @param s: A string to check.
+        @type s: str
+        @return: True if wrapped in cdata tag.
+        @rtype: boolean
+        """
+        return (len(s) > 12 and s[:9] == '<![CDATA[' and s[-3:] == ']]>')
+
+    def needsEncoding(self, s, cdataFound):
         """
         Get whether string I{s} contains special characters.
         @param s: A string to check.
@@ -47,10 +61,24 @@ class Encoder:
         @rtype: boolean
         """
         if isinstance(s, basestring):
-            for c in self.special:
+            if cdataFound:
+                special_characters = self.special_cdata
+            else:
+                special_characters = self.special
+
+            for c in special_characters:
                 if c in s:
                     return True
         return False
+
+    def encodeString(self, s, cdataFound):
+        if cdataFound:
+            encodings = self.encodings_cdata
+        else:
+            encodings = self.encodings
+        for x in encodings:
+            s = re.sub(x[0], x[1], s)
+        return s
 
     def encode(self, s):
         """
@@ -60,16 +88,14 @@ class Encoder:
         @return: The encoded string.
         @rtype: str
         """
-        if isinstance(s, basestring) and self.needsEncoding(s):
-            # Skip encoding of CDATA
-            cdata_found = False
-            if len(s) > 12 and s[:9] == '<![CDATA[' and s[-3:] == ']]>':
+        if isinstance(s, basestring):
+            cdataFound = self.containsCdata(s)
+            if cdataFound:
                 s = s[9:-3]
-                cdata_found = True
-            for x in self.encodings:
-                s = re.sub(x[0], x[1], s)
-            if cdata_found:
-                s = u'<![CDATA[{s}]]>'.format(s=s)
+            if self.needsEncoding(s, cdataFound):
+                s = self.encodeString(s, cdataFound)
+                if cdataFound:
+                    s = u'<![CDATA[{s}]]>'.format(s=s)
         return s
 
     def decode(self, s):
